@@ -1,6 +1,5 @@
 package com.pablopaglilla.jlox;
 
-import java.util.List;
 
 abstract class Expr {
   interface Visitor<R> {

@@ -1,11 +1,9 @@
 package com.pablopaglilla.jlox;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
 import static com.pablopaglilla.jlox.TokenType.*;
-import com.pablopaglilla.jlox.Lox;
 
 class Parser {
 

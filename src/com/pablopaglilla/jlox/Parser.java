@@ -26,7 +26,11 @@ class Parser {
     }
 
     private Expr expression() {
-        return equality();
+        return commaOperation();
+    }
+
+    private Expr commaOperation() {
+        return this.parseBinary(this::equality, COMMA);
     }
 
     private Expr equality() {

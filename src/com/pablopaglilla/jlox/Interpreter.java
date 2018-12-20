@@ -28,8 +28,8 @@ public class Interpreter implements Expr.Visitor<Object> {
                 if(areNumbers(left, right)) {
                     return (double)right + (double)left;
                 }
-                if(areStrings(left, right)) {
-                    return (String)right + (String)left;
+                if(oneIsString(left, right)) {
+                    return stringify(left) + stringify(right);
                 }
                 throw new RuntimeError(expr.operator,
                         "Operands must be two numbers or two strings.");
@@ -149,6 +149,11 @@ public class Interpreter implements Expr.Visitor<Object> {
 
     private boolean areStrings(Object left, Object right) {
         if(left instanceof String && right instanceof String) return true;
+        return false;
+    }
+
+    private boolean oneIsString(Object left, Object right) {
+        if(left instanceof String || right instanceof String) return true;
         return false;
     }
 }

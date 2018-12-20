@@ -1,5 +1,6 @@
 package com.pablopaglilla.jlox;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -66,6 +67,13 @@ class Parser {
             Token operator = previous();
             Expr right = unary();
             return new Expr.Unary(operator, right);
+        }
+
+        TokenType[] binaries = new TokenType[]{BANG_EQUAL, EQUAL_EQUAL, GREATER, GREATER_EQUAL, LESS,
+                LESS_EQUAL, MINUS, PLUS, STAR, SLASH};
+
+        if(match(binaries)){
+            throw error(previous(), "Expected left operand before binary operation");
         }
 
         return primary();

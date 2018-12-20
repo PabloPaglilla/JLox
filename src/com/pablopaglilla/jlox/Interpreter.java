@@ -1,5 +1,7 @@
 package com.pablopaglilla.jlox;
 
+import java.util.function.BiFunction;
+
 public class Interpreter implements Expr.Visitor<Object> {
 
     void interpret(Expr expression) {
@@ -23,10 +25,10 @@ public class Interpreter implements Expr.Visitor<Object> {
 
         switch (expr.operator.type) {
             case PLUS:
-                if(left instanceof Double && right instanceof Double) {
+                if(areNumbers(left, right)) {
                     return (double)right + (double)left;
                 }
-                if(left instanceof String && right instanceof String) {
+                if(areStrings(left, right)) {
                     return (String)right + (String)left;
                 }
                 throw new RuntimeError(expr.operator,
@@ -41,19 +43,24 @@ public class Interpreter implements Expr.Visitor<Object> {
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left * (double)right;
             case GREATER:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left > (double)right;
+                return doComparison(expr.operator, left, right,
+                        (a, b) -> a > b,
+                        (a, b) -> a.compareTo(b) > 0);
             case GREATER_EQUAL:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left >= (double)right;
+                return doComparison(expr.operator, left, right,
+                        (a, b) -> a >= b,
+                        (a, b) -> a.compareTo(b) >= 0);
             case LESS:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left < (double)right;
+                return doComparison(expr.operator, left, right,
+                        (a, b) -> a < b,
+                        (a, b) -> a.compareTo(b) < 0);
             case LESS_EQUAL:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left <= (double)right;
+                return doComparison(expr.operator, left, right,
+                        (a, b) -> a <= b,
+                        (a, b) -> a.compareTo(b) <= 0);
             case BANG_EQUAL: return !isEqual(left, right);
             case EQUAL_EQUAL: return isEqual(left, right);
+            case COMMA: return left;
         }
 
         // Unreachable.
@@ -121,8 +128,27 @@ public class Interpreter implements Expr.Visitor<Object> {
 
     private void checkNumberOperands(Token operator,
                                      Object left, Object right) {
-        if (left instanceof Double && right instanceof Double) return;
+        if (areNumbers(left, right)) return;
 
         throw new RuntimeError(operator, "Operands must be numbers.");
+    }
+
+    private boolean doComparison(Token operator, Object left, Object right,
+                                BiFunction<Double, Double, Boolean> numberHandler,
+                                BiFunction<String, String, Boolean> stringHandler) {
+        if(areNumbers(left, right)) return numberHandler.apply((double)left, (double)right);
+        if(areStrings(left, right)) return stringHandler.apply((String)left, (String)right);
+
+        throw new RuntimeError(operator, "Operands must be numbers or strings");
+    }
+
+    private boolean areNumbers(Object left, Object right) {
+        if (left instanceof Double && right instanceof Double) return true;
+        return false;
+    }
+
+    private boolean areStrings(Object left, Object right) {
+        if(left instanceof String && right instanceof String) return true;
+        return false;
     }
 }

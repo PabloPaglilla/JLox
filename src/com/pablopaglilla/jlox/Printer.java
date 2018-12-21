@@ -72,6 +72,9 @@ public abstract class Printer implements Expr.Visitor<String>{
     @Override
     public String visitAssignExpr(Expr.Assign expr) { return transform("= " + expr.name.lexeme, expr.value); }
 
+    @Override
+    public String visitLogicalExpr(Expr.Logical expr) { return transform(expr.operator.lexeme, expr.left, expr.right); }
+
     abstract String transform(String name, Expr... exprs);
 
 }

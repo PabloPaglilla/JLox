@@ -228,4 +228,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if(left instanceof String || right instanceof String) return true;
         return false;
     }
+
+    public String replEvaluate(Expr expr) {
+        return stringify(evaluate(expr));
+    }
 }

@@ -42,7 +42,12 @@ public class Lox {
 
         for (;;) {
             System.out.print("> ");
-            run(reader.readLine());
+            String line = reader.readLine();
+            if(line.endsWith(";")){
+                run(line);
+            } else {
+                evaluate(line);
+            }
             hadError = false;
             hadRuntimeError = false;
         }
@@ -60,6 +65,18 @@ public class Lox {
         if (hadError) return;
 
         interpreter.interpret(statements);
+    }
+
+    private static void evaluate(String source) {
+        Scanner scanner = new Scanner(source);
+        List<Token> tokens = scanner.scanTokens();
+
+        Parser parser = new Parser(tokens);
+        Expr expression = parser.parseExpression();
+
+        if(hadError) return;
+
+        System.out.println(interpreter.replEvaluate(expression));
     }
 
     public static void error(int line, String message) {

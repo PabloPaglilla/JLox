@@ -237,4 +237,8 @@ class Parser {
             advance();
         }
     }
+
+    public Expr parseExpression() {
+        return expression();
+    }
 }

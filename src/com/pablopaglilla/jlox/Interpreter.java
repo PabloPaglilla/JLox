@@ -5,6 +5,15 @@ import java.util.function.BiFunction;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
+    private static class BreakStatementException extends RuntimeException {
+        private Token token;
+
+        BreakStatementException(Token token) {
+            super();
+            this.token = token;
+        }
+    };
+
     private Environment environment = new Environment();
 
     void interpret(List<Stmt> statements) {
@@ -12,12 +21,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             for (Stmt statement : statements) {
                 execute(statement);
             }
+        } catch (BreakStatementException error) {
+            throw new RuntimeError(error.token, "Break outside loop.");
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
 
-    private void execute(Stmt stmt) {
+    private void execute(Stmt stmt) throws BreakStatementException{
         stmt.accept(this);
     }
 
@@ -76,10 +87,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
-        while (isTruthy(evaluate(stmt.condition))) {
-            execute(stmt.body);
+        try {
+            while (isTruthy(evaluate(stmt.condition))) {
+                execute(stmt.body);
+            }
+        } catch (BreakStatementException e){
+
         }
         return null;
+    }
+
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        throw new BreakStatementException(stmt.breakToken);
     }
 
     @Override

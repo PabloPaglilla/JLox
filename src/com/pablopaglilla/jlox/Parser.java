@@ -56,6 +56,7 @@ class Parser {
         if (match(IF)) return ifStatement();
         if (match(WHILE)) return whileStatement();
         if (match(FOR)) return forStatement();
+        if (match(BREAK)) return breakStatement();
 
         return expressionStatement();
     }
@@ -146,6 +147,11 @@ class Parser {
         }
 
         return body;
+    }
+
+    private Stmt breakStatement() {
+        consume(SEMICOLON, "Expect ';' after 'break'.");
+        return new Stmt.Break(previous());
     }
 
     private Expr expression() {

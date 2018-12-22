@@ -1,5 +1,8 @@
 package com.pablopaglilla.jlox;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Printer implements Expr.Visitor<String>{
 
     static class AstPrinter extends Printer{
@@ -74,6 +77,11 @@ public abstract class Printer implements Expr.Visitor<String>{
 
     @Override
     public String visitLogicalExpr(Expr.Logical expr) { return transform(expr.operator.lexeme, expr.left, expr.right); }
+
+    @Override
+    public String visitCallExpr(Expr.Call expr) {
+        return transform("call", expr.callee);
+    }
 
     abstract String transform(String name, Expr... exprs);
 

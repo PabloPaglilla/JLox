@@ -25,28 +25,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         });
     }
 
-    private static class BreakStatementException extends RuntimeException {
-        private Token token;
-
-        BreakStatementException(Token token) {
-            super();
-            this.token = token;
-        }
-    };
-
     void interpret(List<Stmt> statements) {
         try {
             for (Stmt statement : statements) {
                 execute(statement);
             }
-        } catch (BreakStatementException error) {
-            throw new RuntimeError(error.token, "Break outside loop.");
+        } catch (Break breakStatement) {
+            throw new RuntimeError(breakStatement.token, "Break outside loop.");
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
     }
 
-    private void execute(Stmt stmt) throws BreakStatementException{
+    private void execute(Stmt stmt) {
         stmt.accept(this);
     }
 
@@ -124,15 +115,15 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             while (isTruthy(evaluate(stmt.condition))) {
                 execute(stmt.body);
             }
-        } catch (BreakStatementException e){
-
+        } catch (Break e){
+            // Continue execution
         }
         return null;
     }
 
     @Override
     public Void visitBreakStmt(Stmt.Break stmt) {
-        throw new BreakStatementException(stmt.breakToken);
+        throw new Break(stmt.breakToken);
     }
 
     @Override

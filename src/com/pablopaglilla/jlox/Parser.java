@@ -29,6 +29,7 @@ class Parser {
 
     private Stmt declaration() {
         try {
+            if (match(FUN)) return function("function");
             if (match(VAR)) return varDeclaration();
 
             return statement();
@@ -52,6 +53,7 @@ class Parser {
 
     private Stmt statement() {
         if (match(PRINT)) return printStatement();
+        if (match(RETURN)) return returnStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
         if (match(IF)) return ifStatement();
         if (match(WHILE)) return whileStatement();
@@ -67,10 +69,42 @@ class Parser {
         return new Stmt.Print(value);
     }
 
+    private Stmt returnStatement() {
+        Token keyword = previous();
+        Expr value = null;
+        if(!check(SEMICOLON)) {
+            value = expression();
+        }
+        consume(SEMICOLON, "Expect ';' after return value.");
+
+        return new Stmt.Return(keyword, value);
+    }
+
     private Stmt expressionStatement() {
         Expr expr = expression();
         consume(SEMICOLON, "Expect ';' after expression.");
         return new Stmt.Expression(expr);
+    }
+
+    private Stmt.Function function(String kind) {
+        Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+        consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+
+        List<Token> parameters = new ArrayList<>();
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 8) {
+                    error(peek(), "Cannot have more than 8 parameters.");
+                }
+
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        List<Stmt> body = block();
+        return new Stmt.Function(name, parameters, body);
     }
 
     private List<Stmt> block() {
@@ -264,19 +298,25 @@ class Parser {
     }
 
     private Expr finishCall(Expr callee) {
+        List<Expr> arguments = arguments();
+
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+
+        return new Expr.Call(callee, paren, arguments);
+    }
+
+    private List<Expr> arguments(){
         List<Expr> arguments = new ArrayList<>();
         if (!check(RIGHT_PAREN)) {
             do {
                 if (arguments.size() >= 8) {
                     error(peek(), "Cannot have more than 8 arguments.");
                 }
-                arguments.add(expression());
+                // We call assignment and not expression because the comma operator doesn't apply here
+                arguments.add(assignment());
             } while (match(COMMA));
         }
-
-        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
-
-        return new Expr.Call(callee, paren, arguments);
+        return arguments;
     }
 
     private Expr primary() {

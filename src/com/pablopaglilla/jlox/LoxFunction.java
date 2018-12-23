@@ -7,9 +7,9 @@ public class LoxFunction implements LoxCallable {
     private final Stmt.Function declaration;
     private final Environment closure;
 
-    LoxFunction(Stmt.Function declaration, Environment closure) {
-        this.closure = closure;
+    LoxFunction(Stmt.Function declaration ,Environment closure) {
         this.declaration = declaration;
+        this.closure = closure;
     }
 
     @Override
@@ -34,9 +34,5 @@ public class LoxFunction implements LoxCallable {
         return declaration.params.size();
     }
 
-    @Override
-    public String toString() {
-        return "<fn " + declaration.name.lexeme + ">";
-    }
 
 }

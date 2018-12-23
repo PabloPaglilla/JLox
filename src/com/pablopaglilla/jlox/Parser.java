@@ -90,17 +90,7 @@ class Parser {
         Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
 
-        List<Token> parameters = new ArrayList<>();
-        if (!check(RIGHT_PAREN)) {
-            do {
-                if (parameters.size() >= 8) {
-                    error(peek(), "Cannot have more than 8 parameters.");
-                }
-
-                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
-            } while (match(COMMA));
-        }
-        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+        List<Token> parameters = declarationParameters();
 
         consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
         List<Stmt> body = block();
@@ -197,7 +187,7 @@ class Parser {
     }
 
     private Expr assignment() {
-        Expr expr = or();
+        Expr expr = annonymousFunction();
 
         if (match(EQUAL)) {
             Token equals = previous();
@@ -212,6 +202,37 @@ class Parser {
         }
 
         return expr;
+    }
+
+    private Expr annonymousFunction() {
+        if(match(FUN)) {
+            consume(LEFT_PAREN, "Expect '(' after 'fun' in annonymous declaration.");
+            List<Token> parameters = declarationParameters();
+
+            consume(LEFT_BRACE, "Expect '{' before function body.");
+            List<Stmt> body = block();
+            Token name = new Token(IDENTIFIER, "annonymous", null, previous().line);
+            return new Expr.Annonymous(name, parameters, body);
+        }
+
+        return or();
+    }
+
+    private List<Token> declarationParameters() {
+        List<Token> parameters = new ArrayList<>();
+
+        if (!check(RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 8) {
+                    error(peek(), "Cannot have more than 8 parameters.");
+                }
+
+                parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+            } while (match(COMMA));
+        }
+        consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+        return parameters;
     }
 
     private Expr or() {
@@ -298,19 +319,19 @@ class Parser {
     }
 
     private Expr finishCall(Expr callee) {
-        List<Expr> arguments = arguments();
+        List<Expr> arguments = callArguments();
 
-        Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments.");
+        Token paren = consume(RIGHT_PAREN, "Expect ')' after callArguments.");
 
         return new Expr.Call(callee, paren, arguments);
     }
 
-    private List<Expr> arguments(){
+    private List<Expr> callArguments(){
         List<Expr> arguments = new ArrayList<>();
         if (!check(RIGHT_PAREN)) {
             do {
                 if (arguments.size() >= 8) {
-                    error(peek(), "Cannot have more than 8 arguments.");
+                    error(peek(), "Cannot have more than 8 callArguments.");
                 }
                 // We call assignment and not expression because the comma operator doesn't apply here
                 arguments.add(assignment());

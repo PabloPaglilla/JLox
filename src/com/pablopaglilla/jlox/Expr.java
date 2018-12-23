@@ -6,6 +6,7 @@ abstract class Expr {
   interface Visitor<R> {
     R visitAssignExpr(Assign expr);
     R visitBinaryExpr(Binary expr);
+    R visitAnnonymousExpr(Annonymous expr);
     R visitCallExpr(Call expr);
     R visitGroupingExpr(Grouping expr);
     R visitLiteralExpr(Literal expr);
@@ -40,6 +41,21 @@ abstract class Expr {
     final Expr left;
     final Token operator;
     final Expr right;
+  }
+  static class Annonymous extends Expr {
+    Annonymous(Token name, List<Token> params, List<Stmt> body) {
+      this.name = name;
+      this.params = params;
+      this.body = body;
+    }
+
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitAnnonymousExpr(this);
+    }
+
+    final Token name;
+    final List<Token> params;
+    final List<Stmt> body;
   }
   static class Call extends Expr {
     Call(Expr callee, Token paren, List<Expr> arguments) {

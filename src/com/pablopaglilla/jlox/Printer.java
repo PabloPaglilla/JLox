@@ -83,6 +83,11 @@ public abstract class Printer implements Expr.Visitor<String>{
         return transform("call", expr.callee);
     }
 
+    @Override
+    public String visitAnnonymousExpr(Expr.Annonymous expr) {
+        return transform("annonymous", expr.params.toArray(new Expr[expr.params.size()]));
+    }
+
     abstract String transform(String name, Expr... exprs);
 
 }

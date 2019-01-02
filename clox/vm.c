@@ -2,20 +2,18 @@
 
 #include "common.h"
 #include "value.h"
-#include "debug.h" 
-#include "vm.h"    
+#include "debug.h"
+#include "stack.h" 
+#include "vm.h"
 
 VM vm;
 
-static void resetStack() {
-  	vm.stackTop = vm.stack; 
+void initVM() {
+	initStack(&vm.stack);
 }
 
-void initVM() {
-	resetStack();    
-}                  
-
-void freeVM() {    
+void freeVM() {
+	freeStack(&vm.stack);
 }
 
 static InterpretResult run() {          
@@ -31,7 +29,7 @@ static InterpretResult run() {
 
 #ifdef DEBUG_TRACE_EXECUTION
 	printf("          ");                                           
-    for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {      
+    for (Value* slot = vm.stack.values; slot < vm.stack.stackTop; slot++) {      
       printf("[ ");                                                 
       printValue(*slot);                                            
       printf(" ]");                                                 
@@ -73,11 +71,9 @@ InterpretResult interpret(Chunk* chunk) {
 }
 
 void push(Value value) {
-  	*vm.stackTop = value; 
-  	vm.stackTop++;        
+  	stackPush(&vm.stack, value);
 }
 
-Value pop() {         
-  	vm.stackTop--;      
-  	return *vm.stackTop;
+Value pop() {
+  	return stackPop(&vm.stack);
 }

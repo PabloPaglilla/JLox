@@ -15,11 +15,13 @@ VM vm;
 
 void initVM() {
 	  initStack(&vm.stack);
+    initTable(&vm.strings);
     vm.objects = NULL;
 }
 
 void freeVM() {
 	  freeStack(&vm.stack);
+    freeTable(&vm.strings);
     freeObjects();
 }
 
